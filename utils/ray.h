@@ -18,7 +18,7 @@ public:
 
     //射线方程P=A+tb
     //const是为了让const实例也能调用该方法，而不是仅允许const实例调用该方法
-    [[nodiscard]] point3 at(float t) const {
+    [[nodiscard]] point3 at(double t) const {
         return orig+t*dir;
     }
 

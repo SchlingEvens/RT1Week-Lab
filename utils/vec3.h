@@ -12,20 +12,20 @@
 class vec3 {
 public:
     union {
-        float e[3];
-        struct {float x,y,z;};
-        struct {float r,g,b;};
+        double e[3];
+        struct {double x,y,z;};
+        struct {double r,g,b;};
     };
 
     //构造方法，无参时默认初始化为0，带三个参数时初始化为对应参数
     vec3():e{0,0,0}{}
-    vec3(float e0,float e1,float e2):e{e0,e1,e2}{}
+    vec3(double e0,double e1,double e2):e{e0,e1,e2}{}
 
     //运算符重载
     //如果是一个const对象调用v3[i]，则自动调用第一个方法，只能读值不能修改
     //如果是一个普通对象，则自动调用第二个，可读可改
-    float operator[](int i) const { return e[i];}
-    float& operator[](int i) {return e[i];}
+    double operator[](int i) const { return e[i];}
+    double& operator[](int i) {return e[i];}
 
     vec3 operator-() const {return vec3(-e[0],-e[1],-e[2]);}
     vec3 operator+=(const vec3& v) {
@@ -36,23 +36,23 @@ public:
     }
 
     //线性乘法
-    vec3& operator*=(float v) {
+    vec3& operator*=(double v) {
         e[0]*=v;
         e[1]*=v;
         e[2]*=v;
         return *this;
     }
-    vec3& operator/=(float v) {
+    vec3& operator/=(double v) {
         return *this *= 1/v;
     }
 
     //模场
-    [[nodiscard]]float length_squared() const {
+    [[nodiscard]]double length_squared() const {
         return e[0]*e[0]+e[1]*e[1]+e[2]*e[2];
     }
 
     //模长
-    [[nodiscard]]float length() const {
+    [[nodiscard]]double length() const {
         return std::sqrt(length_squared());
     }
 };
@@ -82,18 +82,18 @@ inline vec3 operator*(const vec3& u,const vec3& v) {
 }
 
 //线性乘法
-inline vec3 operator*(const vec3& u,float v) {
+inline vec3 operator*(const vec3& u,double v) {
     return vec3(u[0]*v,u[1]*v,u[2]*v);
 }
-inline vec3 operator*(float t,const vec3& v) {
+inline vec3 operator*(double t,const vec3& v) {
     return v*t;
 }
-inline vec3 operator/(const vec3& u,float v) {
+inline vec3 operator/(const vec3& u,double v) {
     return u*(1/v);
 }
 
 //点乘
-inline float dot(const vec3& u,const vec3& v) {
+inline double dot(const vec3& u,const vec3& v) {
     return u.e[0]*v.e[0]+u.e[1]*v.e[1]+u.e[2]*v.e[2];
 }
 
