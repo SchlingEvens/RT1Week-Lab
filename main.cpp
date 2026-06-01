@@ -2,8 +2,30 @@
 #include <fstream>
 #include "utils/utils.h"
 
+/**
+ *
+ * @param center 球体中心
+ * @param radius 球半径
+ * @param r 光线
+ * @return 是否在球上/内部
+ */
+bool hit_sphere(const point3& center,double radius,const ray& r) {
+    auto delta_a=dot(r.direction(),r.direction());
+    auto delta_b=-2*dot(r.direction(),(center-r.origin()));
+    auto delta_c=dot(center-r.origin(),r.direction())-radius*radius;
+    return sqrt(delta_b*delta_b-4*delta_a*delta_c)>=0;
+}
+
 color ray_color(const ray& r) {
-    return color(0,0,0);
+    if (hit_sphere(point3(0,0,-1),0.5,r))return color(1.0,0.0,0.0);
+
+    //将光线转换为单位向量
+    vec3 unit_direction=unit_vector(r.direction());
+    //将y坐标的范围从[-1,1]映射到[0,1]，便于之后按比例混合颜色
+    //由于主函数规定的视口高度为2，以视口中心为0，则高度的范围就是【-1，1】
+    auto a=0.5*(unit_direction.y+1.0);
+    //返回白色和蓝色混合后的颜色
+    return (1.0-a)*color(1.0,1.0,1.0)+a*color(0.5,0.7,1.0);
 }
 
 int main() {
@@ -49,9 +71,9 @@ int main() {
         std::clog<<"\r当前进度："<<(image_height-j)<<' '<<std::flush;
         for (int i=0;i<image_width;i++) {
             //计算当前像素中心，光线会从视点指向当前像素中心
-            auto pixel_center=pixel00_loc+i*pixel_delta_u;
+            auto pixel_center=pixel00_loc+i*pixel_delta_u+j*pixel_delta_v;
             //计算指向当前像素的光线的方向
-            auto ray_direction=camera_center-pixel_center;
+            auto ray_direction=pixel_center-camera_center;
             //声明当前光线的实例
             ray r(camera_center,ray_direction);
             //使用pixel_color方法得到当前像素的颜色
