@@ -3,21 +3,30 @@
 #include "utils/utils.h"
 
 /**
- *
  * @param center 球体中心
  * @param radius 球半径
  * @param r 光线
- * @return 是否在球上/内部
+ * @return 射线方程 P(t)=A+td 中的t，即光线从起点经过了多长的路径到达了指定像素
  */
-bool hit_sphere(const point3& center,double radius,const ray& r) {
+double hit_sphere(const point3& center,double radius,const ray& r) {
     auto delta_a=dot(r.direction(),r.direction());
-    auto delta_b=-2*dot(r.direction(),(center-r.origin()));
+    auto delta_b=-2.0*dot(r.direction(),(center-r.origin()));
     auto delta_c=dot(center-r.origin(),r.direction())-radius*radius;
-    return sqrt(delta_b*delta_b-4*delta_a*delta_c)>=0;
+
+    auto discriminant=delta_b*delta_b-4.0*delta_a*delta_c;
+    if (discriminant<0.0)return -1.0;
+    else return (-delta_b-std::sqrt(discriminant))/(2.0*delta_a);
 }
 
 color ray_color(const ray& r) {
-    if (hit_sphere(point3(0,0,-1),0.5,r))return color(1.0,0.0,0.0);
+    //计算当前光线如果能与球面相交，则经过了多长的距离
+    auto t=hit_sphere(point3(0.0,0.0,-1),0.5,r);
+    if (t>0.0) {
+        //计算当前光线从起点经过t的距离和球面相交时，交点的坐标并归一化。
+        //由于计算法线是相对物体自身，所以需要减去球体的中心坐标，以模拟当前位于原点（局部坐标）
+        auto p=unit_vector(r.at(t)-point3(0.0,0.0,-1.0));
+        return 0.5*color(p.r+1.0,p.g+1.0,p.b+1.0);
+    }
 
     //将光线转换为单位向量
     vec3 unit_direction=unit_vector(r.direction());
@@ -49,8 +58,8 @@ int main() {
     auto camera_center=point3(0,0,0);    //相机/视点坐标
 
     //从视口左边缘到右边缘、上边缘到下边缘的向量
-    auto view_u=vec3(view_width,0,0);
-    auto view_v=vec3(0,-view_height,0);
+    auto view_u=vec3(view_width,0.0,0.0);
+    auto view_v=vec3(0.0,-view_height,0.0);
 
     //像素在水平和垂直方向上的步进增量
     //这表示每向右/下移动一个像素，在3d空间中需要移动的距离
