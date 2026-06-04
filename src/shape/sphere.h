@@ -1,5 +1,4 @@
-﻿//
-// Created by Klingsor on 2026/6/2.
+﻿// Created by Klingsor on 2026/6/2.
 //
 
 #ifndef RT1WEEK_SPHERE_H
@@ -22,15 +21,16 @@ public:
         auto delta_c=dot(oc,oc)-radius*radius;
 
         //判断交点数量
-        auto discriminant=h-delta_a*delta_c;
-        if (discriminant<0)return false;
+        auto discriminant = h*h - delta_a*delta_c;
+        if (discriminant < 0) return false;
+        auto sqrt_disc = std::sqrt(discriminant);
 
         //检查交点是否在range t_min,t_max 内
-        auto root=(h*h-std::sqrt(discriminant))/delta_a;
-        if (root<t_min||root>t_max){
+        auto root = (h - sqrt_disc) / delta_a;
+        if (root < t_min || root > t_max) {
             //检查较大根
-            root=(h*h+std::sqrt(discriminant))/delta_a;
-            if (root<t_min||root>t_max)return false;
+            root = (h + sqrt_disc) / delta_a;
+            if (root < t_min || root > t_max) return false;
         }
         //这里直接把数据写进函数参数的rec
         rec.t=root;

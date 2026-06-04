@@ -9,4 +9,5 @@ add_executable(RT1Week src/main.cpp
         src/core/ray.h
         src/shape/hittable.h
         src/shape/sphere.h
-        src/shape/hittable_list.h)
+        src/shape/hittable_list.h
+        src/math/rtweek.h)

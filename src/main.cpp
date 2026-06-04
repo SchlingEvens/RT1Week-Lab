@@ -1,36 +1,21 @@
 ﻿#include <iostream>
 #include <fstream>
-#include "math/vec3.h"
-#include "core/color.h"
-#include "core/ray.h"
+#include "math/rtweek.h"
+#include "shape/hittable_list.h"
+#include "shape/sphere.h"
+#include "shape/hittable.h"
 
-/**
- * @param center 球体中心
- * @param radius 球半径
- * @param r 光线
- * @return 射线方程 P(t)=A+td 中的t，即光线从起点经过了多长的路径到达了指定像素
- */
-double hit_sphere(const point3& center,double radius,const ray& r) {
-    auto oc=center-r.origin();
-    auto delta_a=dot(r.direction(),r.direction());
-    auto h=dot(r.direction(),oc);
-    auto delta_c=dot(oc,oc)-radius*radius;
 
-    auto discriminant=h*h-delta_a*delta_c;
-    if (discriminant<0.0)return -1.0;
-    else return (h-std::sqrt(discriminant))/(delta_a);
-}
-
-color ray_color(const ray& r) {
-    //计算当前光线如果能与球面相交，则经过了多长的距离
-    auto t=hit_sphere(point3(0.0,0.0,-1),0.5,r);
-    if (t>0.0) {
-        //计算当前光线从起点经过t的距离和球面相交时，交点的坐标并归一化。
-        //由于计算法线是相对物体自身，所以需要减去球体的中心坐标，以模拟当前位于原点（局部坐标）
-        auto p=unit_vector(r.at(t)-point3(0.0,0.0,-1.0));
-        return 0.5*color(p.r+1.0,p.g+1.0,p.b+1.0);
+color ray_color(const ray& r,const hittable_list& world) {
+    //检查当前射线是否和实体对象相交
+    hit_record temp_rec;
+    if (world.hit(r,0.001,infinity,temp_rec)) {
+        //返回交点的法线映射的颜色
+        return 0.5*(temp_rec.normal+color(1.0,1.0,1.0));
     }
 
+
+    //如果没有交点，则绘制渐变背景
     //将光线转换为单位向量
     vec3 unit_direction=unit_vector(r.direction());
     //将y坐标的范围从[-1,1]映射到[0,1]，便于之后按比例混合颜色
@@ -75,6 +60,12 @@ int main() {
     //获得视口左上角顶点像素的像素中心
     auto pixel00_loc=view_upper_left+0.5*(pixel_delta_u+pixel_delta_v);
 
+    //world
+    //创建可击中对象列表并添加两个shpere
+    hittable_list world;
+    world.add(make_shared<sphere>(point3(0.0,0.0,-1.0),0.5));
+    world.add(make_shared<sphere>(point3(0.0,-100.5,-1.0),100));
+
     //Render && PPMInput
     out<<"P3\n"<<image_width<<' '<<image_height<<'\n'<<"255\n";
 
@@ -88,8 +79,8 @@ int main() {
             auto ray_direction=pixel_center-camera_center;
             //声明当前光线的实例
             ray r(camera_center,ray_direction);
-            //使用pixel_color方法得到当前像素的颜色
-            auto pixel_color=ray_color(r);
+            //使用ray_color方法得到当前像素的颜色
+            auto pixel_color=ray_color(r,world);
             //将颜色输出到文件
             write_color(out,pixel_color);
         }
