@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include <fstream>
-#include "utils/utils.h"
+#include "math/vec3.h"
+#include "core/color.h"
+#include "core/ray.h"
 
 /**
  * @param center 球体中心
@@ -9,13 +11,14 @@
  * @return 射线方程 P(t)=A+td 中的t，即光线从起点经过了多长的路径到达了指定像素
  */
 double hit_sphere(const point3& center,double radius,const ray& r) {
+    auto oc=center-r.origin();
     auto delta_a=dot(r.direction(),r.direction());
-    auto delta_b=-2.0*dot(r.direction(),(center-r.origin()));
-    auto delta_c=dot(center-r.origin(),r.direction())-radius*radius;
+    auto h=dot(r.direction(),oc);
+    auto delta_c=dot(oc,oc)-radius*radius;
 
-    auto discriminant=delta_b*delta_b-4.0*delta_a*delta_c;
+    auto discriminant=h*h-delta_a*delta_c;
     if (discriminant<0.0)return -1.0;
-    else return (-delta_b-std::sqrt(discriminant))/(2.0*delta_a);
+    else return (h-std::sqrt(discriminant))/(delta_a);
 }
 
 color ray_color(const ray& r) {

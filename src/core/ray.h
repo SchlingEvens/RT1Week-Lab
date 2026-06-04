@@ -5,6 +5,8 @@
 #ifndef RT1WEEK_RAY_H
 #define RT1WEEK_RAY_H
 
+#include "../math/vec3.h"
+
 class ray {
 public:
     //构造函数

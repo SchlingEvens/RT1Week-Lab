@@ -5,7 +5,7 @@
 #ifndef RT1WEEK_COLOR_H
 #define RT1WEEK_COLOR_H
 
-#include "vec3.h"
+#include "../math/vec3.h"
 #include <iostream>
 
 //使用color作为vec3的别名
