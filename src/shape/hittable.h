@@ -6,6 +6,7 @@
 #define RT1WEEK_HITTABLE_H
 
 #include "../math/vec3.h"
+#include "../math/interval.h"
 #include "../core/ray.h"
 
 //单次碰撞的切片数据
@@ -34,7 +35,7 @@ class hittable {
 public:
     //使用默认的析构函数
     virtual ~hittable() = default;
-    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
+    virtual bool hit(const ray& r, interval t, hit_record& rec) const = 0;
 };
 
 #endif //RT1WEEK_HITTABLE_H

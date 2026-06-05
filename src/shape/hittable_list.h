@@ -9,6 +9,7 @@
 #include <vector>
 #include "hittable.h"
 #include "../core/ray.h"
+#include "../math/interval.h"
 using std::make_shared;
 using std::shared_ptr;
 
@@ -26,16 +27,16 @@ public:
     void add(shared_ptr<hittable> object){ objects.push_back(object); }
     void clear(){objects.clear();}
 
-    bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override {
+    bool hit(const ray& r, interval t, hit_record& rec) const override {
         hit_record temp_record;
         //当前最近的碰撞点和视点的距离
-        double closest_so_f=t_max;
+        double closest_so_f=t.max;
         //当前是否存在能够碰撞的点
         bool isHit=false;
 
         //遍历当前列表中的所有可击中对象，返回最近的碰撞切片
         for (const auto& object : objects) {
-            if (object->hit(r,t_min,closest_so_f,temp_record)) {
+            if (object->hit(r,interval(t.min,closest_so_f),temp_record)) {
                 isHit=true;
                 rec=temp_record;
                 closest_so_f=rec.t;

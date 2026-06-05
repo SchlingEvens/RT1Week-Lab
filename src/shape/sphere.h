@@ -5,7 +5,7 @@
 #define RT1WEEK_SPHERE_H
 
 #include "hittable.h"
-#include "../math/vec3.h"
+#include "../math/rtweek.h"
 #include "../core/ray.h"
 
 class sphere:public hittable {       //public:继承访问修饰符
@@ -14,7 +14,7 @@ public:
 
     //判断是否击中
     //rec是输出参数
-    bool hit(const ray &r, double t_min, double t_max, hit_record &rec) const override {
+    bool hit(const ray &r, interval t, hit_record &rec) const override {
         auto oc=center-r.origin();
         auto delta_a=dot(r.direction(),r.direction());
         auto h=dot(r.direction(),oc);
@@ -27,10 +27,10 @@ public:
 
         //检查交点是否在range t_min,t_max 内
         auto root = (h - sqrt_disc) / delta_a;
-        if (root < t_min || root > t_max) {
+        if (!t.surrounds(root)) {
             //检查较大根
             root = (h + sqrt_disc) / delta_a;
-            if (root < t_min || root > t_max) return false;
+            if (!t.surrounds(root)) return false;
         }
         //这里直接把数据写进函数参数的rec
         rec.t=root;
