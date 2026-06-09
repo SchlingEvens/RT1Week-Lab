@@ -12,4 +12,5 @@ add_executable(RT1Week src/main.cpp
         src/shape/hittable_list.h
         src/math/rtweek.h
         src/math/interval.h
-        src/core/camera.h)
+        src/core/camera.h
+        src/math/random.h)

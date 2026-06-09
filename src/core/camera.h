@@ -16,6 +16,9 @@ public:
     double aspect_ratio=1.0;
     int image_width=100;
 
+    //单像素采样次数
+    int sample=100;
+
     //接收可击中对象列表，初始化世界空间和摄像机，逐像素发射光线计算渲染结果
     void render(std::ostream& out ,const hittable& world) {
         init();
@@ -23,19 +26,18 @@ public:
         //PPM文件头
         out<<"P3\n"<<image_width<<' '<<image_height<<'\n'<<"255\n";
 
-        //逐像素渲染
+        //逐像素渲染 i-水平偏移 j-垂直偏移
         for (int j=0;j<image_height;j++) {
             //输出进度,\r表示光标回到当前行行首
             std::clog<<"\r当前进度："<<(image_height-j)<<' '<<std::flush;
             for (int i=0;i<image_width;i++) {
-                //计算当前像素中心，光线会从视点指向当前像素中心
-                auto pixel_center=pixel00_loc+i*pixel_delta_u+j*pixel_delta_v;
-                //计算指向当前像素的光线的方向
-                auto ray_direction=pixel_center-camera_center;
-                //声明当前光线的实例
-                ray r(camera_center,ray_direction);
-                //使用ray_color方法得到当前像素的颜色
-                auto pixel_color=ray_color(r,world);
+                //重采样并计算颜色平均值
+                color pixel_color=color(0.0,0.0,0.0);
+                for (int k=0;k<sample;k++) {
+                    ray r=get_ray(i,j);
+                    pixel_color+=ray_color(r,world);
+                }
+                pixel_color*=pixel_sample_scale;
                 //将颜色输出到文件
                 write_color(out,pixel_color);
             }
@@ -46,6 +48,7 @@ public:
 private:
     int image_height=100;
     point3 camera_center;
+    double pixel_sample_scale;     //缩放因子
 
     //像素在水平和垂直方向上的步进增量
     point3 pixel_delta_u;
@@ -56,6 +59,7 @@ private:
 
 
     void init() {
+        pixel_sample_scale=1.0/sample;
         image_height=image_width/aspect_ratio<1?1:image_width/aspect_ratio;
 
         //Camera
@@ -81,6 +85,18 @@ private:
 
     }
 
+    //根据随机偏移量计算实际光线
+    ray get_ray(int i,int j) {
+        auto offset =sample_squart();
+        //偏移后的实际像素中心
+        auto pixel_offset=pixel00_loc+(
+            ((double)i+offset.x)*pixel_delta_u+
+            ((double)j+offset.y)*pixel_delta_v);
+
+        auto origin=camera_center;
+        auto dirction=pixel_offset-origin;
+        return ray(origin,dirction);
+    }
 
     color ray_color(const ray& r,const hittable& world) {
         //检查当前射线是否和实体对象相交
@@ -100,6 +116,11 @@ private:
         return (1.0-a)*color(1.0,1.0,1.0)+a*color(0.5,0.7,1.0);
     }
 
+    //单次采样偏移量
+    //将范围从random_double的（0，1）映射到（-0.5，0.5）
+    vec3 sample_squart() const {
+        return vec3(random_double()-0.5,random_double()-0.5,0.0);
+    }
 };
 
 #endif //RT1WEEK_CAMERA_H

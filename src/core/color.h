@@ -6,6 +6,7 @@
 #define RT1WEEK_COLOR_H
 
 #include "../math/vec3.h"
+#include "../math/interval.h"
 #include <iostream>
 
 //使用color作为vec3的别名
@@ -18,9 +19,10 @@ void write_color(std::ostream& out, const color& pixel_color) {
     auto b=pixel_color.b;
 
     //转换为ppm格式支持的颜色参数[0,255]
-    int ir=int(255.999*r);
-    int ig=int(255.999*g);
-    int ib=int(255.999*b);
+    static const interval color_interval=interval(0.0,0.99999);
+    int ir=int(255.999*color_interval.clamp(r));
+    int ig=int(255.999*color_interval.clamp(g));
+    int ib=int(255.999*color_interval.clamp(b));
 
     out<<ir<<' '<<ig<<' '<<ib<<'\n';
 }
