@@ -19,6 +19,9 @@ public:
     //单像素采样次数
     int sample=100;
 
+    //漫反射最大递归深度
+    int max_depth=10;
+
     //接收可击中对象列表，初始化世界空间和摄像机，逐像素发射光线计算渲染结果
     void render(std::ostream& out ,const hittable& world) {
         init();
@@ -35,7 +38,7 @@ public:
                 color pixel_color=color(0.0,0.0,0.0);
                 for (int k=0;k<sample;k++) {
                     ray r=get_ray(i,j);
-                    pixel_color+=ray_color(r,world);
+                    pixel_color+=ray_color(r,world,max_depth);
                 }
                 pixel_color*=pixel_sample_scale;
                 //将颜色输出到文件
@@ -98,12 +101,17 @@ private:
         return ray(origin,dirction);
     }
 
-    color ray_color(const ray& r,const hittable& world) {
+    color ray_color(const ray& r,const hittable& world,int depth) {
+        //如果达到最大深度，直接返回黑色
+        if (depth<=0)return color(0.0,0.0,0.0);
+
         //检查当前射线是否和实体对象相交
         hit_record temp_rec;
-        if (world.hit(r,interval(0,infinity),temp_rec)) {
+        if (world.hit(r,interval(0.001,infinity),temp_rec)) {
+            //获取随机的漫反射光线
+            auto direction=temp_rec.normal+random_unit_vector();
             //返回交点的法线映射的颜色
-            return 0.5*(temp_rec.normal+color(1.0,1.0,1.0));
+            return 0.5*ray_color(ray(temp_rec.position,direction),world,depth-1);
         }
 
         //如果没有交点，则绘制渐变背景
@@ -116,11 +124,13 @@ private:
         return (1.0-a)*color(1.0,1.0,1.0)+a*color(0.5,0.7,1.0);
     }
 
-    //单次采样偏移量
+    //随机单次采样偏移量
     //将范围从random_double的（0，1）映射到（-0.5，0.5）
     vec3 sample_squart() const {
         return vec3(random_double()-0.5,random_double()-0.5,0.0);
     }
+
+    //
 };
 
 #endif //RT1WEEK_CAMERA_H

@@ -9,6 +9,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "random.h"
+
 class vec3 {
 public:
     union {
@@ -46,7 +48,7 @@ public:
         return *this *= 1/v;
     }
 
-    //模场
+    //模长的平方
     [[nodiscard]]double length_squared() const {
         return e[0]*e[0]+e[1]*e[1]+e[2]*e[2];
     }
@@ -55,6 +57,12 @@ public:
     [[nodiscard]]double length() const {
         return std::sqrt(length_squared());
     }
+
+    //生成随机单位向量
+    static vec3 random(){return vec3(random_double(),random_double(),random_double());}
+    //生成每个分量在[min,max]范围内的随机单位向量
+    static vec3 random(double min,double max){return vec3(random_double(min,max),random_double(min,max),random_double(min,max));}
+
 };
 
 //使用point3作为vec3的别名
@@ -109,6 +117,22 @@ inline vec3 cross(const vec3& u,const vec3& v) {
 //单位向量
 inline vec3 unit_vector(const vec3& v) {
     return v/v.length();
+}
+
+//生成随机单位向量
+inline vec3 random_unit_vector() {
+    while (true) {
+        auto p=vec3::random(-1,1);
+        auto lensq=p.length_squared();
+        if (lensq>1e-160&&lensq<1.0)return unit_vector(p);
+    }
+}
+
+//生成随机和传入法线向量方向相同的单位向量
+inline vec3 random_on_hemishpere(const vec3& normal) {
+    auto on_unit_vec=random_unit_vector();
+    if (dot(on_unit_vec,normal)>0) return on_unit_vec;    //同向/位于相同半球
+    else return -on_unit_vec;
 }
 
 #endif //RT1WEEK_VEC3_H

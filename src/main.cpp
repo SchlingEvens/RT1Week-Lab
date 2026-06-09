@@ -27,6 +27,7 @@ int main() {
     cam.image_width=400;
     cam.aspect_ratio=16.0/9.0;
     cam.sample=100;
+    cam.max_depth=10;
 
     //渲染
     cam.render(out,world);
